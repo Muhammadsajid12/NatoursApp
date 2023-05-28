@@ -41,14 +41,15 @@ const GetTours = async (req, res) => {
   try {
     // Here we create a class with method filter,sort,pagination,and limitaion.....
     const feature = new APIFeatures(Tour.find(), req.query)
-      .limitFields()
       .filter()
-      .paginate()
-      .sort();
+      .sort()
+      .limitFields()
+      .paginate();
 
     // Awaiting the query..
     const tours = await feature.query;
 
+    // Response
     res.status(200).json({
       satus: 'success',
       results: tours.length,
