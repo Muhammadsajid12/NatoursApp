@@ -3,6 +3,7 @@ const Tour = require('../model/tour');
 const APIFeatures = require('../utils/apiFeatures');
 // TopToursFn...👌👌
 const aliasTopTours = (req, res, next) => {
+  //  Building query.....
   req.query.limit = '5';
   req.query.sort = '-ratingAverage,price';
   req.query.fields = 'name,ratingAverage,price,duration,difficulty';
@@ -65,7 +66,7 @@ const GetTours = async (req, res) => {
 };
 
 const GetByIdTour = async (req, res) => {
-  const tour = await Tour.findById(req.params.id);
+  const tour = await Tour.findById(req.params.id, { runValidators: true });
 
   try {
     res.status(200).json({
@@ -122,10 +123,7 @@ const PostTour = async (req, res) => {
 };
 
 const PatchTour = async (req, res) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body);
 
   try {
     res.status(200).json({
@@ -135,7 +133,7 @@ const PatchTour = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({
-      status: 'falide',
+      status: 'faild',
       data:
         'request is failed due to you missing something in reqbody..........'
     });
@@ -160,6 +158,102 @@ const DeleteTour = async (req, res) => {
   }
 };
 
+const TourStats = async (req, res) => {
+  try {
+    const Stats = await Tour.aggregate([
+      {
+        $match: { ratingAverage: { $gte: 4.5 } } //? we can match the document multiple time...
+      },
+      {
+        $group: {
+          //In Agregation Group is very powerfull feature that group to gather the documents on the base of _id and you can other stuff as well..
+          // _id: null,
+          _id: '$difficulty',
+          // _id: '$ratingAverage',
+          // _id: { $toUpper: '$difficulty' },
+          // _id: '$maxGroupSize',
+          numTours: { $sum: 1 }, // This is very nice trick to sum the grouped document...
+          numRating: { $sum: '$ratingQuality' }, // Here just sum the all docs ratings.....
+          avgRating: { $avg: '$ratingAverage' },
+          avgPrice: { $avg: '$price' },
+          minPrice: { $min: '$price' },
+          maxPrice: { $max: '$price' }
+        }
+      },
+      {
+        $match: { _id: { $ne: 4.9 } } //? we can match the document multiple time..
+      },
+      {
+        $sort: { avgPrice: 1 }
+      }
+    ]);
+
+    res.status(200).json({
+      results: 'success',
+      message: 'Stats get successfully',
+      Stats
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'falide',
+      message: ` ${error}`
+    });
+  }
+};
+
+const MonthlyPlan = async (req, res) => {
+  const year = req.params.year;
+
+  const plan = await Tour.aggregate([
+    {
+      $unwind: '$startDates' // This operator will create each new document for date.... and date is array of date here unwind operater create individual document for each date
+    },
+    {
+      $match: {
+        // This operator show the document which match with this condition...
+        startDates: {
+          $gte: new Date(`${year}-01-01`),
+          $lte: new Date(`${year}-12-31`)
+        }
+      }
+    },
+    {
+      $group: {
+        // This will group the document according to Id...
+        _id: { $month: '$startDates' }, // This month operator will get the month from the Date....
+        numToursStarts: { $sum: 1 },
+        tours: { $push: '$name' } // This push oprator will create the tours variable as array and push the names of that tours which star at that month
+      }
+    },
+    {
+      $addFields: { month: '$_id' } // This will add new field with the month from id as we specify  in group..
+    },
+    {
+      // $project: { _id: 1, numToursStarts: 1, month: 1 } // 0 for remove and 1 for hide.....
+      $project: { _id: 0 }
+    },
+    {
+      $sort: { numToursStarts: -1 } // -1 for decending order 1 Accending order...
+    },
+    {
+      $limit: 12
+    }
+  ]);
+
+  try {
+    res.status(200).json({
+      results: plan.length,
+      message: 'Plan get successfully',
+      plan
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'falide',
+      message: ` ${error}`
+    });
+  }
+};
+
 module.exports = {
   GetTours,
   GetByIdTour,
@@ -167,6 +261,8 @@ module.exports = {
   PatchTour,
   DeleteTour,
   aliasTopTours,
-  // CheckID,
+  TourStats,
+  MonthlyPlan,
   Auth
+  // CheckID,
 };

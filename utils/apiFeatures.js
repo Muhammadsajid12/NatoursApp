@@ -5,7 +5,7 @@ class APIFeatures {
   }
 
   filter() {
-    const queryObj = { ...this.queryString };
+    const queryObj = { ...this.queryString }; // Here we taking hard copy of the queryobj to perform just filtering...
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach(el => delete queryObj[el]);
 
@@ -33,7 +33,7 @@ class APIFeatures {
   limitFields() {
     // THis is return the object with wanted field..
     if (this.queryString.fields) {
-      const fields = this.queryString.fields.split(',').join(' ');
+      const fields = this.queryString.fields.split(',').join('');
       this.query = this.query.select(fields);
     } else {
       this.query = this.query.select('-__v');

@@ -15,7 +15,7 @@ mongoose
   .connect(DB, { useNewUrlParser: true, useUnifiedTopology: true })
   // .connect('mongodb://localhost:27017/natours')
   .then(con => {
-    // console.log(con.connection);
+    // console.log(con.connection);zz
     console.log('db connected ');
   })
   .catch(err => console.log(err));

@@ -9,8 +9,10 @@ const {
   PatchTour,
   DeleteTour,
   aliasTopTours,
+  MonthlyPlan,
   CheckID,
-  Auth
+  Auth,
+  TourStats
 } = require('../controller/tourtController');
 
 // Param middleware........................
@@ -19,7 +21,16 @@ const {
 
 // Tours-Routes
 router.get('/get-Cheap-Tours', aliasTopTours, GetTours);
+// Stats Route..
+router.get('/get-stats', TourStats);
+// MonthlyPlanRoute
+router.get('/monthly-plan/:year', MonthlyPlan);
+
+// Other Routes
 router.get('/', GetTours).post('/', Auth, PostTour);
+
+// PipeLineFn
+
 router
   .get('/:id', GetByIdTour)
   .patch('/:id', PatchTour)
