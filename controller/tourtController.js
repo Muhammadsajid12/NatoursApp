@@ -1,6 +1,9 @@
 const fs = require('fs');
 const Tour = require('../model/tour');
 const APIFeatures = require('../utils/apiFeatures');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+
 // TopToursFn...👌👌
 const aliasTopTours = (req, res, next) => {
   //  Building query.....
@@ -37,52 +40,43 @@ const Auth = (req, res, next) => {
   next();
 };
 
-const GetTours = async (req, res) => {
-  try {
-    // Here we create a class with method filter,sort,pagination,and limitaion.....
-    const feature = new APIFeatures(Tour.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
+const GetTours = catchAsync(async (req, res, next) => {
+  // Here we create a class with method filter,sort,pagination,and limitaion.....
+  const feature = new APIFeatures(Tour.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
 
-    // Awaiting the query..
-    const tours = await feature.query;
+  // Awaiting the query..
+  const tours = await feature.query;
 
-    // Response
-    res.status(200).json({
-      satus: 'success',
-      results: tours.length,
-      data: {
-        tours
-      }
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: 'failed',
-      message: `tours not found due to your bad request..`,
-      error: `${error}`
-    });
+  // Response
+  res.status(200).json({
+    satus: 'success',
+    results: tours.length,
+    data: {
+      tours
+    }
+  });
+});
+
+const GetByIdTour = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findById(req.params.id);
+  console.log(tour);
+  if (!tour) {
+    return next(
+      new AppError(`The Tours not Found by this Id;${req.params.id}`, 404)
+    );
   }
-};
 
-const GetByIdTour = async (req, res) => {
-  const tour = await Tour.findById(req.params.id, { runValidators: true });
+  res.status(200).json({
+    results: 'success',
+    data: tour
+  });
+});
 
-  try {
-    res.status(200).json({
-      results: 'success',
-      data: tour
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: 'failed',
-      message: 'tours not found due to your bad request..'
-    });
-  }
-};
-
-const PostTour = async (req, res) => {
+const PostTour = catchAsync(async (req, res, next) => {
   // const { name, price, rating } = req.body; // you can destructure and then pass the value to create fn...🐾🐾
 
   // const newId = tours[tours.length - 1].id + 1;
@@ -90,21 +84,14 @@ const PostTour = async (req, res) => {
   // const newTour = Object.assign({ id: newId }, req.body); // This obj.assign make a new obj with some extra added fields
   // tours.push(newTour);
 
-  try {
-    const newTour = await Tour.create(req.body);
+  const newTour = await Tour.create(req.body);
 
-    // Response.....🐬🐬🐬
-    res.status(201).json({
-      message: 'New tour is created........',
-      results: newTour.length,
-      data: newTour
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: 'falide',
-      data: error
-    });
-  }
+  // Response.....🐬🐬🐬
+  res.status(201).json({
+    message: 'New tour is created........',
+    results: newTour.length,
+    data: newTour
+  });
 
   // Here we writing the file which data we get from req.body..........👻👻
   // fs.writeFile(`${__dirname}/tours-simple.json`, JSON.stringify(tours), err => {
@@ -121,88 +108,78 @@ const PostTour = async (req, res) => {
   //     });
   //   }
   // });
-};
+});
 
-const PatchTour = async (req, res) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body);
+const PatchTour = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+    new: true
+  });
 
-  try {
-    res.status(200).json({
-      results: 'success',
-      message: 'Data is updated....',
-      data: tour
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: 'faild',
-      data:
-        'request is failed due to you missing something in reqbody..........'
-    });
+  if (!tour) {
+    return next(
+      new AppError(`The Tours not Found by this Id;${req.params.id}`, 404)
+    );
   }
-};
 
-const DeleteTour = async (req, res) => {
-  const tour = await Tour.findByIdAndRemove(req.params.id);
+  res.status(200).json({
+    results: 'success',
+    message: 'Data is updated....',
+    data: tour
+  });
+});
 
-  try {
-    res.status(204).json({
-      results: 'success',
-      messge: 'Data is deleted....',
-      data: tour
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: 'falide',
-      data:
-        'request is failed due to you missing something in reqbody..........'
-    });
+const DeleteTour = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findByIdAndRemove(req.params.id, { new: true });
+
+  if (!tour) {
+    return next(
+      new AppError(`The Tours not Found by this Id;${req.params.id}`, 404)
+    );
   }
-};
+  res.status(204).json({
+    results: 'success',
+    messge: 'Data is deleted....',
+    data: tour
+  });
+});
 
-const TourStats = async (req, res) => {
-  try {
-    const Stats = await Tour.aggregate([
-      {
-        $match: { ratingAverage: { $gte: 4.5 } } //? we can match the document multiple time...
-      },
-      {
-        $group: {
-          //In Agregation Group is very powerfull feature that group to gather the documents on the base of _id and you can other stuff as well..
-          // _id: null,
-          _id: '$difficulty',
-          // _id: '$ratingAverage',
-          // _id: { $toUpper: '$difficulty' },
-          // _id: '$maxGroupSize',
-          numTours: { $sum: 1 }, // This is very nice trick to sum the grouped document...
-          numRating: { $sum: '$ratingQuality' }, // Here just sum the all docs ratings.....
-          avgRating: { $avg: '$ratingAverage' },
-          avgPrice: { $avg: '$price' },
-          minPrice: { $min: '$price' },
-          maxPrice: { $max: '$price' }
-        }
-      },
-      {
-        $match: { _id: { $ne: 4.9 } } //? we can match the document multiple time..
-      },
-      {
-        $sort: { avgPrice: 1 }
+const TourStats = catchAsync(async (req, res, next) => {
+  const Stats = await Tour.aggregate([
+    {
+      $match: { ratingAverage: { $gte: 4.5 } } //? we can match the document multiple time...
+    },
+    {
+      $group: {
+        //In Agregation Group is very powerfull feature that group to gather the documents on the base of _id and you can other stuff as well..
+        // _id: null,
+        _id: '$difficulty',
+        // _id: '$ratingAverage',
+        // _id: { $toUpper: '$difficulty' },
+        // _id: '$maxGroupSize',
+        numTours: { $sum: 1 }, // This is very nice trick to sum the grouped document...
+        numRating: { $sum: '$ratingQuality' }, // Here just sum the all docs ratings.....
+        avgRating: { $avg: '$ratingAverage' },
+        avgPrice: { $avg: '$price' },
+        minPrice: { $min: '$price' },
+        maxPrice: { $max: '$price' }
       }
-    ]);
+    },
+    {
+      $match: { _id: { $ne: 4.9 } } //? we can match the document multiple time..
+    },
+    {
+      $sort: { avgPrice: 1 }
+    }
+  ]);
 
-    res.status(200).json({
-      results: 'success',
-      message: 'Stats get successfully',
-      Stats
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: 'falide',
-      message: ` ${error}`
-    });
-  }
-};
+  res.status(200).json({
+    results: 'success',
+    message: 'Stats get successfully',
+    Stats
+  });
+});
 
-const MonthlyPlan = async (req, res) => {
+const MonthlyPlan = catchAsync(async (req, res, next) => {
   const year = req.params.year;
 
   const plan = await Tour.aggregate([
@@ -241,19 +218,12 @@ const MonthlyPlan = async (req, res) => {
     }
   ]);
 
-  try {
-    res.status(200).json({
-      results: plan.length,
-      message: 'Plan get successfully',
-      plan
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: 'falide',
-      message: ` ${error}`
-    });
-  }
-};
+  res.status(200).json({
+    results: plan.length,
+    message: 'Plan get successfully',
+    plan
+  });
+});
 
 module.exports = {
   GetTours,

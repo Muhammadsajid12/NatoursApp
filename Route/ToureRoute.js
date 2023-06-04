@@ -27,7 +27,7 @@ router.get('/get-stats', TourStats);
 router.get('/monthly-plan/:year', MonthlyPlan);
 
 // Other Routes
-router.get('/', GetTours).post('/', Auth, PostTour);
+router.get('/', GetTours).post('/', PostTour);
 
 // PipeLineFn
 

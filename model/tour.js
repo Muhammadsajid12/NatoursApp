@@ -19,15 +19,15 @@ const tourSchema = new Schema(
     },
     duration: {
       type: Number,
-      require: true
+      required: true
     },
     maxGroupSize: {
       type: Number,
-      require: true
+      required: true
     },
     difficulty: {
       type: String,
-      require: true,
+      required: true,
       enum: {
         values: ['easy', 'medium', 'difficult'],
         message: 'Diffculty is either:easy,meduim and difficult'
@@ -91,42 +91,43 @@ const tourSchema = new Schema(
 );
 // Virtual Property...........
 // ! We can not use this propery in query beacuase this is not part of the model properties..
-tourSchema.virtual('durationWeeks').get(function() {
-  return this.duration / 7;
-});
+// tourSchema.virtual('durationWeeks').get(function() {
+//   return this.duration / 7;
+// });
 
 // 1)Document MiddleWare: run before save() create() schema ....
-tourSchema.pre('save', function(next) {
-  this.slug = slugify(this.name, { lower: true });
-  next();
-});
+// tourSchema.pre('save', function(next) {
+//   this.slug = slugify(this.name, { lower: true });
+//   next();
+// });
 // We can add multiple document middleware in row..
-tourSchema.pre('save', function(next) {
-  console.log('This is second middleware😵😵 ...');
-  next();
-});
+// tourSchema.pre('save', function(next) {
+//   console.log('This is second middleware😵😵 ...');
+//   next();
+// });
 
 // Post middleware....
-tourSchema.post('save', function(doc, next) {
-  console.log(doc);
-  next();
-});
+// tourSchema.post('save', function(doc, next) {
+//   console.log(doc);
+//   next();
+// });
 
 // 2)Query Middleware: We have Also pre , and save midlleWare in query middleware as well
-tourSchema.pre(/^find/, function(next) {
-  // This regular expression find run for all mongoose funtion that start with find..
-  this.find({ secretTour: { $ne: true } });
-  this.start = Date.now();
-  // console.log(doc);
-  next();
-});
-tourSchema.post(/^find/, function(doc, next) {
-  // post in query middleware excute after the documents are fetched..
-  this.find({ secretTour: { $ne: true } });
-  console.log(`Query Time Took ${Date.now() - this.start} milliSecond `);
-  // console.log(doc);
-  next();
-});
+// tourSchema.pre(/^find/, function(next) {
+//   // This regular expression find run for all mongoose funtion that start with find..
+//   this.find({ secretTour: { $ne: true } });
+//   this.start = Date.now();
+//   // console.log(doc);
+//   next();
+// });
+
+// tourSchema.post(/^find/, function(doc, next) {
+//   // post in query middleware excute after the documents are fetched..
+//   this.find({ secretTour: { $ne: true } });
+//   console.log(`Query Time Took ${Date.now() - this.start} milliSecond `);
+//   // console.log(doc);
+//   next();
+// });
 
 // 3)AGGREGATION MIDDLEWARE: This  midlle ware have also pre and post method..
 // tourSchema.pre('aggregate', function(next) {

@@ -47,6 +47,7 @@ const deleteData = async () => {
   process.exit();
 };
 
+//RUN THIS COMMAND TO IMPORT THE DATA ...........
 // node dev-data/data/importData.js --import
 if (process.argv[2] === '--import') {
   importData();
