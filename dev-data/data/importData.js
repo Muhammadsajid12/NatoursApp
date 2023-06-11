@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config({ path: './confing.env' });
-const Tour = require('../../model/tour');
+const Tour = require('../../model/tourModel');
 
 const fs = require('fs');
 

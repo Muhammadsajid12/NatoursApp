@@ -4,7 +4,9 @@ const morgan = require('morgan');
 const tourRouter = require('./Route/ToureRoute');
 const userRouter = require('./Route/userRoute');
 const AppError = require('./utils/appError');
+
 const errorGlobalHandler = require('./controller/errorController');
+
 const app = express();
 
 // Here we getting the enviroment variable data Db Connecting stuff........👻👻👻
@@ -15,9 +17,13 @@ const DB = process.env.DATA_BASE.replace(
 mongoose
   .connect(DB, { useNewUrlParser: true, useUnifiedTopology: true })
   // .connect('mongodb://localhost:27017/natours')
-  .then(con => {
+  .then(() => {
     // console.log(con.connection);
     console.log('db connected ');
+  })
+  .catch(err => {
+    console.log(`'Error;${err} '`);
+    process.exit(1);
   });
 
 // Here we just checking the enviroment....

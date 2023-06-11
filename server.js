@@ -1,5 +1,11 @@
 const dotenv = require('dotenv');
 
+process.on('uncaughtException', err => {
+  console.log('Error🎗️: Application is Showting down...');
+  console.log(err.name, err.message);
+  process.exit(1);
+});
+
 dotenv.config({ path: './confing.env' }); // This will add all the config file varible to env object.........
 const app = require('./app');
 
@@ -11,6 +17,7 @@ app.listen(port, () => {
   console.log(`The server is running at port ${port}`);
 });
 
-// process.on('unhandledRejection', err => {
-//   console.log(err.message, err.name);
-// });
+process.on('unhandledRejection', reason => {
+  console.error('Unhandled Promise Rejection 🎗️:', reason);
+  // Handle the rejection here
+});

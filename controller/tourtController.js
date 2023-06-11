@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Tour = require('../model/tour');
+const Tour = require('../model/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -29,7 +29,6 @@ const aliasTopTours = (req, res, next) => {
 // };
 
 const Auth = (req, res, next) => {
-  console.log('Here is the Auth function..........');
   if (!req.body.name || !req.body.price) {
     res.status(400).json({
       status: 'failed',
@@ -40,7 +39,7 @@ const Auth = (req, res, next) => {
   next();
 };
 
-const GetTours = catchAsync(async (req, res, next) => {
+const GetTours = catchAsync(async (req, res) => {
   // Here we create a class with method filter,sort,pagination,and limitaion.....
   const feature = new APIFeatures(Tour.find(), req.query)
     .filter()
@@ -63,22 +62,22 @@ const GetTours = catchAsync(async (req, res, next) => {
 
 const GetByIdTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.id);
-  console.log(tour);
+
+  // Checking for tour
   if (!tour) {
     return next(
       new AppError(`The Tours not Found by this Id;${req.params.id}`, 404)
     );
   }
 
+  // Send back to response
   res.status(200).json({
     results: 'success',
     data: tour
   });
 });
 
-const PostTour = catchAsync(async (req, res, next) => {
-  // const { name, price, rating } = req.body; // you can destructure and then pass the value to create fn...🐾🐾
-
+const PostTour = catchAsync(async (req, res) => {
   // const newId = tours[tours.length - 1].id + 1;
   // console.log(newId);
   // const newTour = Object.assign({ id: newId }, req.body); // This obj.assign make a new obj with some extra added fields
@@ -111,9 +110,12 @@ const PostTour = catchAsync(async (req, res, next) => {
 });
 
 const PatchTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true
-  });
+  const tour = await Tour.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+
+    { runValidators: true }
+  );
 
   if (!tour) {
     return next(

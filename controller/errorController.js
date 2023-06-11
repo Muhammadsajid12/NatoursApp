@@ -7,9 +7,16 @@ const handleErrorDb = err => {
 };
 // This fn create operational error for dupilicate name...
 const handleErrorUniqueNameDb = err => {
-  const message = `Duplicate field value:${err.keyValue.name} Please use an other value..`;
+  const message = `Duplicate field value:${err.keyValue.name} :Please use an other value..`;
   return new AppError(message, 400);
 };
+
+// This fn create Validation ......
+const handleValidationError = err => {
+  const message = `${err.message}`;
+  return new AppError(message, 400);
+};
+
 const errorForDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -21,7 +28,6 @@ const errorForDev = (err, res) => {
 const errorForProd = (err, res) => {
   if (err.isOperational) {
     // Operational trusted error:send message to client
-
     res.status(err.statusCode).json({
       status: err.status,
       message: err.message
@@ -31,7 +37,7 @@ const errorForProd = (err, res) => {
     res.status(err.statusCode).json({
       status: err.status,
       message: 'Somthing went very wrong',
-      error: err
+      err
     });
   }
 };
@@ -50,7 +56,10 @@ module.exports = (err, req, res, next) => {
 
     // Error checking that send by mongodb...
     if (err.name === 'CastError') error = handleErrorDb(error);
+    // Error check when user want to create tour with same name...
     if (error.code === 11000) error = handleErrorUniqueNameDb(error);
+    //  Error when user miss some required field....
+    if (err.name === 'ValidationError') error = handleValidationError(error);
     errorForProd(error, res);
   }
 
