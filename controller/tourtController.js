@@ -1,4 +1,3 @@
-const fs = require('fs');
 const Tour = require('../model/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
@@ -28,6 +27,7 @@ const aliasTopTours = (req, res, next) => {
 //   next();
 // };
 
+// This fn just check name and price of the tour is entered....
 const Auth = (req, res, next) => {
   if (!req.body.name || !req.body.price) {
     res.status(400).json({
@@ -40,7 +40,7 @@ const Auth = (req, res, next) => {
 };
 
 const GetTours = catchAsync(async (req, res) => {
-  // Here we create a class with method filter,sort,pagination,and limitaion.....
+  // Here we calling a  APIFeatures Class with method filter,sort,pagination,and limitaion.....
   const feature = new APIFeatures(Tour.find(), req.query)
     .filter()
     .sort()

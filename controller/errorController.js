@@ -16,7 +16,15 @@ const handleValidationError = err => {
   const message = `${err.message}`;
   return new AppError(message, 400);
 };
+// This fn create when your jwt token is wrong
+const handleJwtError = err =>
+  new AppError('Invalid jwt token , Login again', 401);
 
+// This fn handle expire token error
+const handleTokenExpiredError = err =>
+  new AppError('Token is expired please login again', 401);
+
+// Error for development....
 const errorForDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -60,6 +68,8 @@ module.exports = (err, req, res, next) => {
     if (error.code === 11000) error = handleErrorUniqueNameDb(error);
     //  Error when user miss some required field....
     if (err.name === 'ValidationError') error = handleValidationError(error);
+    if (err.name === 'JsonWebTokenError') error = handleJwtError();
+    if (err.name === 'TokenExpiredError') error = handleTokenExpiredError();
     errorForProd(error, res);
   }
 

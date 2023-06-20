@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Auth } = require('../controller/tourtController');
-const { signUp } = require('../controller/authController');
+const { signUp, logIn } = require('../controller/authController');
 const {
   GetAllUsers,
   GetUser,
@@ -10,10 +9,11 @@ const {
   DeleteUser
 } = require('../controller/userController');
 
-router.post('/singup', signUp);
+router.post('/singUp', signUp);
+router.post('/logIn', logIn);
 
 // // User-Routes
-// router.get('/', GetAllUsers).post(GetUser);
+router.get('/', GetAllUsers).post(GetUser);
 
 // router
 //   .get('/:id/:x?/:y?', PostUser)
