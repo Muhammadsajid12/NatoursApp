@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 // Here we create the instance of the Schma class
@@ -15,6 +16,17 @@ const userSchema = new mongoose.Schema({
     lowerCase: true
   },
   photo: String,
+
+  role: {
+    type: String,
+    enum: ['admin', 'user', 'lead-admin'],
+    default: 'admin'
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female'],
+    default: 'male'
+  },
   password: {
     type: String,
     required: [true, 'Plese provide the password'],
@@ -36,7 +48,9 @@ const userSchema = new mongoose.Schema({
   passwordChangeAt: {
     type: Date,
     default: Date.now()
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date
 });
 
 // Model middleware👌👌
@@ -48,6 +62,7 @@ userSchema.pre('save', async function(next) {
 
   // Delete the confirmpassword field..
   this.confirmpassword = undefined;
+  next();
 });
 
 //...................... WE can create a custom method on doc then can use where ever we want......................
@@ -67,9 +82,24 @@ userSchema.methods.changePasswordAt = function(jwtTimeStamp) {
       10
     );
 
-    return jwtTimeStamp < changeTimeStamp; // 100 < 200
+    return jwtTimeStamp < changeTimeStamp; // 100 < 200 If the change time is greater its mean password have changed..
   }
   return false;
+};
+
+// This fn create reset random token..🫥🫥
+userSchema.methods.CreatePasswordRestToken = function() {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  const hash = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  this.resetPasswordToken = hash;
+
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  return resetToken;
 };
 
 //Here create the model

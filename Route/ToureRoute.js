@@ -1,5 +1,5 @@
 const express = require('express');
-const { Auth } = require('../controller/authController');
+const { Auth, restrictTo } = require('../controller/authController');
 const router = express.Router();
 
 const {
@@ -26,13 +26,12 @@ router.get('/monthly-plan/:year', Auth, MonthlyPlan);
 
 // Other Routes
 router.get('/', Auth, GetTours).post('/', PostTour);
-
 // PipeLineFn
 
 router
   .get('/:id', Auth, GetByIdTour)
   .patch('/:id', Auth, PatchTour)
-  .delete('/:id', Auth, DeleteTour);
+  .delete('/:id', Auth, restrictTo('admin', 'lead-admin'), DeleteTour);
 
 // Exports..
 module.exports = router;

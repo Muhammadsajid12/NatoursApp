@@ -42,7 +42,7 @@ app.use(express.static(`${__dirname}/public`)); // this middleware allow to show
 
 // ROUTES...........😕😕😕
 app.use('/api/v1/tours', tourRouter);
-app.use('/api/v1/user', userRouter);
+app.use('/api/v1/users', userRouter);
 
 // This route handle the all unwantedRoute  Requests...
 app.all('*', (req, res, next) => {
