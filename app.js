@@ -4,7 +4,10 @@ const morgan = require('morgan');
 const tourRouter = require('./Route/ToureRoute');
 const userRouter = require('./Route/userRoute');
 const AppError = require('./utils/appError');
-
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const mongoSanitize = require('express-mongo-sanitize');
 const errorGlobalHandler = require('./controller/errorController');
 
 const app = express();
@@ -25,19 +28,29 @@ mongoose
     console.log(`'Error;${err} '`);
     process.exit(1);
   });
-// This is middleware fn excute on every request..
-app.use((req, res, next) => {
-  // console.log(req.headers);
-  next();
+// GLOBAL MIDDLEWARE...
+// SET HEADERS..
+app.use(helmet());
+// MONGO SANITIZE
+app.use(mongoSanitize());
+// XSS
+app.use(xss());
+
+const limiter = rateLimit({
+  max: 100,
+  WindowMs: 60 * 60 * 1000,
+  message: ' To many request to this route :Please wait one hour'
 });
+// LIMITER
+app.use('/api', limiter);
 // Here we just checking the enviroment....
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-console.log(process.env.NODE_ENV, '<<<<<APP>>>>');
-// This middleware is important to use here this will make able to us send data in json formate...........
-app.use(express.json());
 
+// This middleware is important to use here this will make able to us send data in json formate...........
+app.use(express.json({ limit: '10kb' }));
+// Serving static files..
 app.use(express.static(`${__dirname}/public`)); // this middleware allow to show static files to browser like html
 
 // ROUTES...........😕😕😕

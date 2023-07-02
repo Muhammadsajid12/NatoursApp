@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
+const AppError = require('../utils/appError');
 // Here we create the instance of the Schma class
 const userSchema = new mongoose.Schema({
   name: {
@@ -20,13 +21,9 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ['admin', 'user', 'lead-admin'],
-    default: 'admin'
+    default: 'user'
   },
-  gender: {
-    type: String,
-    enum: ['male', 'female'],
-    default: 'male'
-  },
+
   password: {
     type: String,
     required: [true, 'Plese provide the password'],
@@ -50,21 +47,43 @@ const userSchema = new mongoose.Schema({
     default: Date.now()
   },
   resetPasswordToken: String,
-  resetPasswordExpire: Date
+  resetPasswordExpire: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false
+  }
 });
 
 // Model middleware👌👌
-userSchema.pre('save', async function(next) {
-  // This fn is only excute when docpassword is modified.📈📈
-  if (!this.isModified) return next();
-
-  this.password = await bcrypt.hash(this.password, 12);
-
-  // Delete the confirmpassword field..
-  this.confirmpassword = undefined;
-  next();
+userSchema.pre(/^find/, async function(next) {
+  // filter the user form database..
+  this.find({ active: { $ne: false } });
 });
 
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password') || this.isNew) return next();
+  if (!this.password) {
+    // Handle the case where password is not provided
+    // You can throw an error or handle it based on your requirements
+    return next(new AppError('Password is required', 400));
+  }
+
+  try {
+    this.password = await bcrypt.hash(this.password, 12);
+    this.confirmpassword = undefined;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+userSchema.pre('save', function(next) {
+  if (!this.isModified('password') || this.isNew) return next();
+  // Here we updating the time of passwordChangeAt Property..
+  this.changePasswordAt = Date.now() - 1000;
+  next();
+});
 //...................... WE can create a custom method on doc then can use where ever we want......................
 userSchema.methods.correctPassword = async function(
   candidatePassord,
@@ -72,6 +91,7 @@ userSchema.methods.correctPassword = async function(
 ) {
   // this.password we can not access candidate entered password like this beacuase we select:false so we have to get both when fn is called
   return await bcrypt.compare(candidatePassord, userPassword);
+  // return candidatePassord === userPassword;
 };
 
 // User change password after jwt(signup) this fn will return true otherwise return false..
@@ -90,7 +110,6 @@ userSchema.methods.changePasswordAt = function(jwtTimeStamp) {
 // This fn create reset random token..🫥🫥
 userSchema.methods.CreatePasswordRestToken = function() {
   const resetToken = crypto.randomBytes(32).toString('hex');
-
   const hash = crypto
     .createHash('sha256')
     .update(resetToken)
