@@ -12,7 +12,7 @@ const sendEmail = async options => {
     }
   });
 
-  // 2) mail options
+  // 2) Set mail options
 
   const mailOptions = {
     from: 'Muhammad Sajid <sajid@gmail.com>',
