@@ -16,7 +16,7 @@ mongoose
   // .connect('mongodb://localhost:27017/natours')
   .then(con => {
     // console.log(con.connection);
-    console.log('db connected from import script👌👌  ');
+    console.log('db connected from import script.  ');
   })
   .catch(err => console.log(err));
 

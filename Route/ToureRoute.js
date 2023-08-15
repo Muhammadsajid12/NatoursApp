@@ -25,7 +25,10 @@ router.get('/get-stats', Auth, TourStats);
 router.get('/monthly-plan/:year', Auth, MonthlyPlan);
 
 // Other Routes
-router.get('/', Auth, GetTours).post('/', PostTour);
+router
+  .get('/', Auth, GetTours)
+  .post('/', PostTour)
+  .get('/', Auth, GetTours);
 // PipeLineFn
 
 router

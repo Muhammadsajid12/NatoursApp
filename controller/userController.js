@@ -1,5 +1,6 @@
 const User = require('../model/userModel');
 const catchAsync = require('../utils/catchAsync');
+const mongoose = require('mongoose');
 const { sendResponse } = require('../controller/authController');
 const AppError = require('../utils/appError');
 
@@ -22,6 +23,45 @@ const GetAllUsers = catchAsync(async (req, res, next) => {
     data: allUser
   });
 });
+//------------------------------------- Get user Update ----------------------------------------------------------
+
+// This is Route  is for create mongoview on user collections
+const GetFilteredUsers = catchAsync(async (req, res, next) => {
+  const pipeline = [
+    {
+      $lookup: {
+        from: 'User',
+        localField: 'customerId',
+        foreignField: '_id',
+        as: 'customer'
+      }
+    }
+    // {
+    //   $project: {
+    //     name: 1,
+    //     duration: 1,
+    //     maxGroupSize: 1,
+    //     summary: 1,
+    //     results: 1
+    //   }
+    // }
+  ];
+
+  // Access the MongoDB database object
+  const db = mongoose.connection.db;
+
+  // Create the view collection
+  await db.createCollection('users_tours_view', {
+    viewOn: 'Inovices',
+    pipeline: pipeline
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'The data is found'
+  });
+});
+
 //---------------------------------- Update the current login user data ---------------------------------------
 const updateMe = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.confirmpassword) {
@@ -68,5 +108,6 @@ module.exports = {
   UpdateUser,
   DeleteUser,
   updateMe,
-  deleteMe
+  deleteMe,
+  GetFilteredUsers
 };

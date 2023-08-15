@@ -67,18 +67,12 @@ exports.logIn = catchAsync(async (req, res, next) => {
   // 2)Check if the user exist and password is correct
   const user = await User.findOne({ email }).select('+password'); // we have hide the password in model but we need here so we can get in this way
   // Here user.correctPassword is method that define in user model...
-  console.log(
-    user,
-    await user.correctPassword(password, user.password),
-    '>>>>>>><<<<<<<<<<'
-  );
+  console.log(user, '<<<<<<<<<User<<<<<<<<<<<<');
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Inncorrect email or password', 401));
   }
   // 3) Send the response
-  const token = createJwt({ id: user._id }); // This is fn to create jwt token pass just current user id.
-
-  this.sendResponse(res, 200, user, ' User Login successfully..', token);
+  this.sendResponse(res, 200, user, ' User Login successfully..');
 });
 
 //--------------------------------------- Auth controller  -------------------------------------------------
