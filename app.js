@@ -17,6 +17,7 @@ const DB = process.env.DATA_BASE.replace(
   '<PASSWORD>',
   process.env.DATA_BASE_PASSWORD
 );
+// Connecting to database....
 mongoose
   .connect(DB, { useNewUrlParser: true, useUnifiedTopology: true })
   // .connect('mongodb://localhost:27017/natours')
@@ -29,6 +30,7 @@ mongoose
     process.exit(1);
   });
 // GLOBAL MIDDLEWARE...
+
 // SET HEADERS..
 app.use(helmet());
 // MONGO SANITIZE
@@ -41,7 +43,7 @@ const limiter = rateLimit({
   WindowMs: 60 * 60 * 1000,
   message: ' To many request to this route :Please wait one hour'
 });
-// LIMITER
+// LIMITER middleware..
 app.use('/api', limiter);
 // Here we just checking the enviroment....
 if (process.env.NODE_ENV === 'development') {
@@ -63,7 +65,7 @@ app.all('*', (req, res, next) => {
   next(new AppError(`This route is not found${req.originalUrl}`, 400));
 });
 
-// This is Error middleware function excute when ever error occure...
+// This is Error middleware function excute when ever error occure in application...
 app.use(errorGlobalHandler);
 
 module.exports = app;

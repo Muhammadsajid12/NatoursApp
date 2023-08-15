@@ -12,7 +12,8 @@ const {
   GetAllUsers,
   GetUser,
   updateMe,
-  deleteMe
+  deleteMe,
+  GetFilteredUsers
 } = require('../controller/userController');
 
 router.post('/singUp', signUp);
@@ -24,7 +25,10 @@ router.patch('/update/me', Auth, updateMe);
 router.delete('/delete/me', Auth, deleteMe);
 
 // User-Routes
-router.get('/', GetAllUsers).post(GetUser);
+router
+  .get('/', GetAllUsers)
+  .post(GetUser)
+  .get('/filtered', GetFilteredUsers);
 
 // router
 //   .get('/:id/:x?/:y?', PostUser)

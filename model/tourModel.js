@@ -81,7 +81,8 @@ const tourSchema = new Schema(
     secretTour: {
       type: Boolean,
       default: false
-    }
+    },
+    userEmail: String
   },
   // In mongose model.Schema we not just send the object we can also add the option object that can allow the virtual property..
   {

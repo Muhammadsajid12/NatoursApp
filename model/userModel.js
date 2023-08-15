@@ -62,7 +62,8 @@ userSchema.pre(/^find/, async function(next) {
 });
 
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password') || this.isNew) return next();
+  if (!this.isModified('password') || !this.isNew) return next();
+
   if (!this.password) {
     // Handle the case where password is not provided
     // You can throw an error or handle it based on your requirements
@@ -89,6 +90,7 @@ userSchema.methods.correctPassword = async function(
   candidatePassord,
   userPassword
 ) {
+  console.log('<<<<<<<<<<<correctPassword<<<<<<<<<<<<');
   // this.password we can not access candidate entered password like this beacuase we select:false so we have to get both when fn is called
   return await bcrypt.compare(candidatePassord, userPassword);
   // return candidatePassord === userPassword;
