@@ -59,6 +59,8 @@ const userSchema = new mongoose.Schema({
 userSchema.pre(/^find/, async function(next) {
   // filter the user form database..
   this.find({ active: { $ne: false } });
+
+  next();
 });
 
 userSchema.pre('save', async function(next) {
@@ -79,6 +81,7 @@ userSchema.pre('save', async function(next) {
   }
 });
 
+// This is handler fn called when password update and save the chagepasswordAt property value..
 userSchema.pre('save', function(next) {
   if (!this.isModified('password') || this.isNew) return next();
   // Here we updating the time of passwordChangeAt Property..

@@ -15,11 +15,12 @@ const filteredObj = (obj, ...allowFields) => {
 };
 //------------------------------------- Get user Update ----------------------------------------------------------
 const GetAllUsers = catchAsync(async (req, res, next) => {
+  // Get all users from database..
   const allUser = await User.find();
 
   res.status(200).json({
     status: 'success',
-    message: 'The data is found',
+    message: 'All Users are found',
     data: allUser
   });
 });
