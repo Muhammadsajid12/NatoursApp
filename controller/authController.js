@@ -69,7 +69,7 @@ exports.logIn = catchAsync(async (req, res, next) => {
   // Here user.correctPassword is method that define in user model...
   console.log(user, '<<<<<<<<<User<<<<<<<<<<<<');
   if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new AppError('Inncorrect email or password', 401));
+    return next(new AppError('Incorrect email or password', 401));
   }
   // 3) Send the response
   this.sendResponse(res, 200, user, ' User Login successfully..');

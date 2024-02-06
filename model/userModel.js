@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Model middleware👌👌
+// 2)Model middleware👌👌
 userSchema.pre(/^find/, async function(next) {
   // filter the user form database..
   this.find({ active: { $ne: false } });
@@ -65,9 +65,8 @@ userSchema.pre(/^find/, async function(next) {
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password') || !this.isNew) return next();
-
+  // Check password entered
   if (!this.password) {
-    // Handle the case where password is not provided
     // You can throw an error or handle it based on your requirements
     return next(new AppError('Password is required', 400));
   }
